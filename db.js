@@ -48,4 +48,4 @@ export function get(sql, params = []) {
 export function all(sql, params = []) {
   return db.prepare(sql).all(...params);
 }
-}
+
