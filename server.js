@@ -3,16 +3,24 @@ import cors from "cors";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { initDb, run, get, all } from "./db.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 initDb();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/", (req, res) => {
+  res.redirect("/login.html");
+});
 
 async function seedIfEmpty() {
   const agentCount = await get("SELECT COUNT(*) as c FROM agents");
@@ -146,4 +154,8 @@ app.get("/api/orders/:id", auth, async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server avviato: http://localhost:${PORT}`);
   console.log(`🔐 Login demo: agent@example.com / agent123`);
+
+});
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("✅ Server avviato:", PORT);
 });
