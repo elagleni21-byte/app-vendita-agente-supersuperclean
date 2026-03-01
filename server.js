@@ -81,8 +81,14 @@ app.post("/api/login", async (req, res) => {
 app.get("/api/me", auth, async (req, res) => res.json({ me: req.user }));
 
 app.get("/api/products", auth, async (req, res) => {
-  const products = await all("SELECT id, name, price_cents, stock FROM products ORDER BY id DESC");
-  res.json({ products });
+  try {
+    const products = await getAll(
+      "SELECT id, name, price_cents, stock FROM products ORDER BY id DESC"
+    );
+    res.json({ products });
+  } catch (e) {
+    res.status(500).json({ error: "Errore caricamento prodotti" });
+  }
 });
 
 app.post("/api/orders", auth, async (req, res) => {
@@ -151,4 +157,5 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
   console.log(`🔐 Login demo: agent@example.com / agent123`);
 });
+
 
