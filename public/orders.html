@@ -1,33 +1,36 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ordini</title>
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="nav">
-      <div class="left">
-        <h2>Ordini</h2>
-      </div>
-      <div class="right">
-        <a href="/dashboard.html">🛍️ Prodotti</a>
-        <a href="/cart.html">🛒 Carrello</a>
-        <button class="secondary" id="btnLogout">Esci</button>
-      </div>
-    </div>
+<div class="container">
+  <h2>I tuoi ordini</h2>
+  <div id="orders"></div>
+  <button onclick="window.location='/dashboard.html'">Indietro</button>
+</div>
 
-    <div class="card">
-      <h1>Storico vendite</h1>
-      <div id="banner" class="badge" style="display:none; margin-top:10px;"></div>
-      <div style="height:10px;"></div>
-      <table class="table" id="ordersTable"></table>
-      <div id="details" style="margin-top:14px;"></div>
-    </div>
-  </div>
+<script>
+const token = localStorage.getItem("token");
+if(!token) window.location="/login.html";
 
-  <script type="module" src="/js/orders.js"></script>
+async function loadOrders(){
+  const res = await fetch("/api/orders",{
+    headers:{Authorization:"Bearer "+token}
+  });
+  const data = await res.json();
+  const div=document.getElementById("orders");
+  div.innerHTML="";
+  data.orders.forEach(o=>{
+    const el=document.createElement("div");
+    el.innerHTML=`Ordine #${o.id} - €${o.total_cents/100}`;
+    div.appendChild(el);
+  });
+}
+
+loadOrders();
+</script>
 </body>
 </html>
