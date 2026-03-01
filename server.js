@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { initDb, run, get, all } from "./db.js";
+import { initDb, query, getOne, getAll, pool } from "./db.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -151,3 +151,4 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
   console.log(`🔐 Login demo: agent@example.com / agent123`);
 });
+
