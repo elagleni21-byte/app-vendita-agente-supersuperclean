@@ -1,10 +1,10 @@
 {
-  "name": "app-vendita-agente",
+  "name": "app-vendita-agente-supersuperclean",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -14,4 +14,5 @@
     "better-sqlite3": "^11.0.0"
   }
 }
+
 
