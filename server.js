@@ -2,13 +2,15 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { initDb, run, get, all } from "./db.js";
 import path from "path";
 import { fileURLToPath } from "url";
+
+import { initDb, run, get, all } from "./db.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -16,11 +18,9 @@ initDb();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
 app.use(express.static(path.join(__dirname, "public")));
-app.get("/", (req, res) => {
-  res.redirect("/login.html");
-});
+
+app.get("/", (req, res) => res.redirect("/login.html"));
 
 async function seedIfEmpty() {
   const agentCount = await get("SELECT COUNT(*) as c FROM agents");
@@ -31,6 +31,7 @@ async function seedIfEmpty() {
       ["Agente Demo", "agent@example.com", password_hash]
     );
   }
+
   const productCount = await get("SELECT COUNT(*) as c FROM products");
   if (productCount?.c === 0) {
     const products = [
@@ -46,12 +47,11 @@ async function seedIfEmpty() {
 }
 seedIfEmpty();
 
-// --- Auth middleware
+// ---- auth middleware
 function auth(req, res, next) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) return res.status(401).json({ error: "Missing token" });
-
   try {
     req.user = jwt.verify(token, JWT_SECRET);
     next();
@@ -60,7 +60,7 @@ function auth(req, res, next) {
   }
 }
 
-// --- API
+// ---- routes
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: "Email e password richieste" });
@@ -74,12 +74,11 @@ app.post("/api/login", async (req, res) => {
   const token = jwt.sign({ agentId: agent.id, name: agent.name, email: agent.email }, JWT_SECRET, {
     expiresIn: "8h"
   });
+
   res.json({ token, agent: { id: agent.id, name: agent.name, email: agent.email } });
 });
 
-app.get("/api/me", auth, async (req, res) => {
-  res.json({ me: req.user });
-});
+app.get("/api/me", auth, async (req, res) => res.json({ me: req.user }));
 
 app.get("/api/products", auth, async (req, res) => {
   const products = await all("SELECT id, name, price_cents, stock FROM products ORDER BY id DESC");
@@ -92,12 +91,10 @@ app.post("/api/orders", auth, async (req, res) => {
     return res.status(400).json({ error: "Dati ordine non validi" });
   }
 
-  // Carica prodotti e calcola totale
   let total_cents = 0;
   for (const it of items) {
-    if (!it.product_id || !it.qty || it.qty <= 0) {
-      return res.status(400).json({ error: "Item non valido" });
-    }
+    if (!it.product_id || !it.qty || it.qty <= 0) return res.status(400).json({ error: "Item non valido" });
+
     const p = await get("SELECT id, price_cents, stock FROM products WHERE id = ?", [it.product_id]);
     if (!p) return res.status(400).json({ error: "Prodotto inesistente" });
     if (p.stock < it.qty) return res.status(400).json({ error: "Stock insufficiente" });
@@ -109,9 +106,8 @@ app.post("/api/orders", auth, async (req, res) => {
     "INSERT INTO orders (agent_id, customer_name, customer_email, total_cents, created_at) VALUES (?, ?, ?, ?, ?)",
     [req.user.agentId, customer_name, customer_email || null, total_cents, now]
   );
-  const order_id = orderRes.lastID;
+  const order_id = orderRes.lastInsertRowid;
 
-  // Inserisci items e aggiorna stock
   for (const it of items) {
     const p = await get("SELECT id, price_cents, stock FROM products WHERE id = ?", [it.product_id]);
     await run(
@@ -151,11 +147,7 @@ app.get("/api/orders/:id", auth, async (req, res) => {
   res.json({ order, items });
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Server avviato: http://localhost:${PORT}`);
-  console.log(`🔐 Login demo: agent@example.com / agent123`);
-
-});
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("✅ Server avviato:", PORT);
+  console.log(`✅ Server avviato su porta ${PORT}`);
+  console.log(`🔐 Login demo: agent@example.com / agent123`);
 });
