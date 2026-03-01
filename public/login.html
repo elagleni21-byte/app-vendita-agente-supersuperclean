@@ -18,6 +18,7 @@
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const err = document.getElementById("err");
+  const agent = await getOne("SELECT * FROM agents WHERE email = $1", [email]);
 
 document.getElementById("btnLogin").addEventListener("click", async () => {
   err.textContent = "";
