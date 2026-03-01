@@ -1,51 +1,67 @@
-import Database from "better-sqlite3";
+import pg from "pg";
+const { Pool } = pg;
 
-const db = new Database("sales.db");
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : undefined
+});
 
-export function initDb() {
-  db.exec(`
+export async function query(text, params = []) {
+  return pool.query(text, params);
+}
+
+export async function initDb() {
+  await query(`
     CREATE TABLE IF NOT EXISTS agents (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'agent',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
 
+  await query(`
     CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
-      price_cents INTEGER NOT NULL,
-      stock INTEGER NOT NULL DEFAULT 0
+      price_cents INT NOT NULL CHECK (price_cents >= 0),
+      stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
 
+  await query(`
     CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      agent_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      agent_id INT NOT NULL REFERENCES agents(id),
       customer_name TEXT NOT NULL,
       customer_email TEXT,
-      total_cents INTEGER NOT NULL,
-      created_at TEXT NOT NULL
+      total_cents INT NOT NULL CHECK (total_cents >= 0),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
 
+  await query(`
     CREATE TABLE IF NOT EXISTS order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_id INTEGER NOT NULL,
-      product_id INTEGER NOT NULL,
-      qty INTEGER NOT NULL,
-      price_cents INTEGER NOT NULL
+      id SERIAL PRIMARY KEY,
+      order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+      product_id INT NOT NULL REFERENCES products(id),
+      qty INT NOT NULL CHECK (qty > 0),
+      price_cents INT NOT NULL CHECK (price_cents >= 0)
     );
   `);
 }
 
-export function run(sql, params = []) {
-  return db.prepare(sql).run(...params);
+export async function getOne(text, params = []) {
+  const res = await query(text, params);
+  return res.rows[0] || null;
 }
 
-export function get(sql, params = []) {
-  return db.prepare(sql).get(...params);
+export async function getAll(text, params = []) {
+  const res = await query(text, params);
+  return res.rows;
 }
 
-export function all(sql, params = []) {
-  return db.prepare(sql).all(...params);
-}
 
