@@ -1,58 +1,52 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Carrello</title>
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="nav">
-      <div class="left">
-        <h2>Carrello</h2>
-      </div>
-      <div class="right">
-        <a href="/dashboard.html">⬅️ Prodotti</a>
-        <a href="/orders.html">📦 Ordini</a>
-        <button class="secondary" id="btnLogout">Esci</button>
-      </div>
-    </div>
+<div class="container">
+  <h2>Carrello</h2>
+  <div id="products"></div>
+  <button onclick="window.location='/dashboard.html'">Indietro</button>
+</div>
 
-    <div class="card">
-      <h1>Crea vendita online</h1>
-      <p class="muted">Inserisci i dati del cliente e conferma l’ordine.</p>
+<script>
+const token = localStorage.getItem("token");
+if(!token) window.location="/login.html";
 
-      <div class="row" style="margin-top:10px;">
-        <div>
-          <div class="muted" style="margin-bottom:6px;">Nome cliente *</div>
-          <input id="customerName" placeholder="Mario Rossi" />
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px;">Email cliente (opzionale)</div>
-          <input id="customerEmail" placeholder="mario@email.com" />
-        </div>
-      </div>
+async function loadProducts(){
+  const res = await fetch("/api/products",{
+    headers:{Authorization:"Bearer "+token}
+  });
+  const data = await res.json();
+  const div=document.getElementById("products");
+  div.innerHTML="";
+  data.products.forEach(p=>{
+    const el=document.createElement("div");
+    el.innerHTML=`${p.name} - €${p.price_cents/100}
+    <button onclick="buy(${p.id})">Compra</button>`;
+    div.appendChild(el);
+  });
+}
 
-      <div style="height:14px;"></div>
+async function buy(id){
+  await fetch("/api/orders",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:"Bearer "+token
+    },
+    body:JSON.stringify({
+      customer_name:"Cliente Demo",
+      items:[{product_id:id,qty:1}]
+    })
+  });
+  alert("Ordine creato!");
+}
 
-      <table class="table" id="cartTable"></table>
-
-      <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:14px;">
-        <div>
-          <div class="muted">Totale</div>
-          <div style="font-size:22px; font-weight:800;" id="total">0,00 €</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <button class="secondary" id="btnClear">Svuota</button>
-          <button id="btnCheckout">Conferma ordine</button>
-        </div>
-      </div>
-
-      <div id="msg" class="error" style="margin-top:10px;"></div>
-    </div>
-  </div>
-
-  <script type="module" src="/js/cart.js"></script>
+loadProducts();
+</script>
 </body>
 </html>
