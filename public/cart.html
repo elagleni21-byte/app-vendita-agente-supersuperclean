@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Carrello</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <h2>Carrello</h2>
+      </div>
+      <div class="right">
+        <a href="/dashboard.html">⬅️ Prodotti</a>
+        <a href="/orders.html">📦 Ordini</a>
+        <button class="secondary" id="btnLogout">Esci</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h1>Crea vendita online</h1>
+      <p class="muted">Inserisci i dati del cliente e conferma l’ordine.</p>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <div class="muted" style="margin-bottom:6px;">Nome cliente *</div>
+          <input id="customerName" placeholder="Mario Rossi" />
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px;">Email cliente (opzionale)</div>
+          <input id="customerEmail" placeholder="mario@email.com" />
+        </div>
+      </div>
+
+      <div style="height:14px;"></div>
+
+      <table class="table" id="cartTable"></table>
+
+      <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:14px;">
+        <div>
+          <div class="muted">Totale</div>
+          <div style="font-size:22px; font-weight:800;" id="total">0,00 €</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="secondary" id="btnClear">Svuota</button>
+          <button id="btnCheckout">Conferma ordine</button>
+        </div>
+      </div>
+
+      <div id="msg" class="error" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/cart.js"></script>
+</body>
+</html>

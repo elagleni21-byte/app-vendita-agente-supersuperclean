@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <h2>Vendite Agente</h2>
+        <span class="badge" id="agentBadge"></span>
+      </div>
+      <div class="right">
+        <a href="/cart.html">🛒 Carrello (<span id="cartCount">0</span>)</a>
+        <a href="/orders.html">📦 Ordini</a>
+        <button class="secondary" id="btnLogout">Esci</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h1>Prodotti</h1>
+      <p class="muted">Aggiungi prodotti al carrello e crea una vendita online.</p>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div class="grid" id="products"></div>
+  </div>
+
+  <script type="module" src="/js/products.js"></script>
+</body>
+</html>

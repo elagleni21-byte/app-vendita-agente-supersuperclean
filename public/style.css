@@ -1,0 +1,91 @@
+:root {
+  --bg: #0b1220;
+  --card: #121c33;
+  --text: #e9eefc;
+  --muted: #9fb0d0;
+  --accent: #5aa7ff;
+  --danger: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+  background: linear-gradient(180deg, #071024, #0b1220);
+  color: var(--text);
+}
+
+a { color: var(--accent); text-decoration: none; }
+.container { max-width: 980px; margin: 0 auto; padding: 20px; }
+
+.nav {
+  display: flex; gap: 14px; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+}
+.nav .left, .nav .right { display: flex; gap: 12px; align-items: center; }
+
+.card {
+  background: rgba(18, 28, 51, 0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+
+h1, h2 { margin: 0 0 10px; }
+.muted { color: var(--muted); }
+
+input, button {
+  font: inherit;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 10px 12px;
+}
+input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+button {
+  background: var(--accent);
+  color: #071024;
+  cursor: pointer;
+  font-weight: 700;
+}
+button.secondary {
+  background: transparent;
+  color: var(--text);
+}
+button.danger {
+  background: var(--danger);
+}
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 620px) { .row { grid-template-columns: 1fr; } }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(90,167,255,0.15);
+  border: 1px solid rgba(90,167,255,0.3);
+  color: var(--text);
+  font-size: 12px;
+}
+.error { color: var(--danger); margin-top: 10px; }

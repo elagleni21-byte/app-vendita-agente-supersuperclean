@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login Agente</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container" style="max-width:520px;">
+    <div class="card">
+      <h1>Login Agente</h1>
+      <p class="muted">Demo: <b>agent@example.com</b> / <b>agent123</b></p>
+
+      <div style="display:grid; gap:10px; margin-top:14px;">
+        <div>
+          <div class="muted" style="margin-bottom:6px;">Email</div>
+          <input id="email" placeholder="agent@example.com" />
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px;">Password</div>
+          <input id="password" type="password" placeholder="••••••••" />
+        </div>
+        <button id="btnLogin">Entra</button>
+        <div id="err" class="error"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { doLogin } from "/js/auth.js";
+
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const err = document.getElementById("err");
+
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      err.textContent = "";
+      try {
+        await doLogin(email.value.trim(), password.value);
+        window.location.href = "/dashboard.html";
+      } catch (e) {
+        err.textContent = e.message;
+      }
+    });
+  </script>
+</body>
+</html>
