@@ -1,0 +1,51 @@
+<div class="topbar">
+  <div class="brand">Area Agente</div>
+  <div class="actions">
+    <button class="btn2" onclick="location.href='/dashboard.html'">Dashboard</button>
+    <button class="btn2" onclick="location.href='/cart.html'">Carrello</button>
+    <button class="btn2" onclick="location.href='/orders.html'">Ordini</button>
+    <button class="btn2" onclick="location.href='/profile-edit.html'">Modifica profilo</button>
+    <button class="btn2" onclick="location.href='/search.html'">Ricerca pubblica</button>
+
+    <button class="iconBtn" id="btnProfile" title="Apri il mio profilo pubblico">👤</button>
+    <button class="btn2" id="btnLogout">Logout</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const token = localStorage.getItem("token");
+  if(!token){ location.href="/login.html"; return; }
+
+  async function api(path){
+    const res = await fetch(path, { headers:{ Authorization:"Bearer "+token }});
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok) throw new Error(data.error || "Errore");
+    return data;
+  }
+
+  const btnProfile = document.getElementById("btnProfile");
+  if(btnProfile){
+    btnProfile.addEventListener("click", async () => {
+      try{
+        const data = await api("/api/profile");
+        if(data.profile && data.profile.id){
+          location.href = "/agent.html?id=" + encodeURIComponent(data.profile.id);
+        } else {
+          location.href = "/profile-edit.html";
+        }
+      }catch(e){
+        alert(e.message);
+      }
+    });
+  }
+
+  const btnLogout = document.getElementById("btnLogout");
+  if(btnLogout){
+    btnLogout.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      location.href="/login.html";
+    });
+  }
+})();
+</script>
