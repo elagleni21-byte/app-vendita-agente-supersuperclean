@@ -222,6 +222,25 @@ app.get("/api/setup-demo", async (req, res) => {
       "INSERT INTO agents (name, email, password_hash) VALUES ($1, $2, $3)",
       ["Agente Demo", "agent@example.com", password_hash]
     );
+   
+app.get("/api/reset-demo", async (req, res) => {
+  try {
+    // cancella eventuale demo
+    await query("DELETE FROM agents WHERE email = $1", ["agent@example.com"]);
+
+    // ricrea demo con password corretta
+    const password_hash = bcrypt.hashSync("agent123", 10);
+    await query(
+      "INSERT INTO agents (name, email, password_hash) VALUES ($1, $2, $3)",
+      ["Agente Demo", "agent@example.com", password_hash]
+    );
+
+    res.json({ ok: true, message: "Demo resettato (agent@example.com / agent123)" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: "Errore reset demo" });
+  }
+});
 
     res.json({ ok: true, message: "Demo creato" });
   } catch (e) {
@@ -233,5 +252,6 @@ app.get("/api/setup-demo", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
 
