@@ -14,33 +14,32 @@
     <p id="err" class="error"></p>
   </div>
 
-<script>
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const err = document.getElementById("err");
-  const agent = await getOne("SELECT * FROM agents WHERE email = $1", [email]);
+  <script>
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+  const err = document.getElementById("err");
 
-document.getElementById("btnLogin").addEventListener("click", async () => {
-  err.textContent = "";
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.value.trim(),
-        password: password.value
-      })
-    });
+  document.getElementById("btnLogin").addEventListener("click", async () => {
+    err.textContent = "";
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.value.trim(),
+          password: password.value
+        })
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login fallito");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Login fallito");
 
-    localStorage.setItem("token", data.token);
-    window.location.href = "/dashboard.html";
-  } catch (e) {
-    err.textContent = e.message;
-  }
-});
+      localStorage.setItem("token", data.token);
+      window.location.href = "/dashboard.html";
+    } catch (e) {
+      err.textContent = e.message;
+    }
+  });
 </script>
 </body>
 </html>
