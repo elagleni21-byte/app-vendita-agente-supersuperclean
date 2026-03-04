@@ -4,20 +4,90 @@
   <meta charset="UTF-8" />
   <title>Dashboard</title>
   <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .topbar{
+      max-width:900px;margin:20px auto 0; padding:0 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .brand{font-weight:900;font-size:18px}
+    .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .iconBtn{
+      width:40px;height:40px;border-radius:999px;border:1px solid #ddd;
+      background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      font-size:18px;
+    }
+    .container{max-width:900px;margin:14px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .muted{opacity:.75}
+    button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .btn{background:#111;color:#fff}
+    .btn2{background:#f0f0f0}
+  </style>
 </head>
 <body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">Area Agente</div>
+    <div class="actions">
+      <button class="btn2" onclick="location.href='/search.html'">Ricerca pubblica</button>
+      <button class="btn2" onclick="location.href='/profile-edit.html'">Modifica profilo</button>
+
+      <!-- ICONA PROFILO -->
+      <button class="iconBtn" id="btnProfile" title="Apri il mio profilo pubblico">👤</button>
+
+      <button class="btn2" id="btnLogout">Logout</button>
+    </div>
+  </div>
+
   <div class="container">
-    <h2>Dashboard</h2>
-    <button onclick="window.location='/cart.html'">Carrello</button>
-    <button onclick="window.location='/orders.html'">Ordini</button>
-    <button onclick="logout()">Logout</button>
+    <div class="card">
+      <h2 style="margin:0 0 6px 0;">Dashboard</h2>
+      <div class="muted">Da qui puoi gestire ordini e il tuo profilo pubblico.</div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button class="btn" onclick="location.href='/cart.html'">Carrello</button>
+        <button class="btn2" onclick="location.href='/orders.html'">Ordini</button>
+      </div>
+
+      <div id="msg" class="muted" style="margin-top:12px;"></div>
+    </div>
   </div>
 
 <script>
-function logout(){
-  localStorage.removeItem("token");
-  window.location="/login.html";
+const token = localStorage.getItem("token");
+if(!token) location.href = "/login.html";
+
+const msg = document.getElementById("msg");
+
+async function api(path) {
+  const res = await fetch(path, {
+    headers: { Authorization: "Bearer " + token }
+  });
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error(data.error || "Errore");
+  return data;
 }
+
+document.getElementById("btnProfile").addEventListener("click", async () => {
+  try {
+    // se ho un profilo, apro agent.html?id=...
+    const data = await api("/api/profile");
+    if (data.profile && data.profile.id) {
+      location.href = "/agent.html?id=" + encodeURIComponent(data.profile.id);
+    } else {
+      // altrimenti mando a creare profilo
+      location.href = "/profile-edit.html";
+    }
+  } catch (e) {
+    msg.textContent = e.message;
+  }
+});
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("token");
+  location.href = "/login.html";
+});
 </script>
 </body>
 </html>
