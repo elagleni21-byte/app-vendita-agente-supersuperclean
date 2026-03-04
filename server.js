@@ -1,3 +1,4 @@
+import { initDb, query, getOne, getAll, pool } from "./db.js";
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcryptjs";
@@ -5,7 +6,6 @@ import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { initDb, query, getOne, getAll, pool } from "./db.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -252,6 +252,7 @@ app.get("/api/reset-demo", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
 
 
