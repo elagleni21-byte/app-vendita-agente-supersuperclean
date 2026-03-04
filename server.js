@@ -342,10 +342,82 @@ app.get("/api/public/agents/:id", async (req, res) => {
     res.status(500).json({ error: "Errore profilo agente" });
   }
 });
+// ------------------- AGENT PROFILE (auth) -------------------
+// Leggi profilo dell'agente loggato
+app.get("/api/profile", auth, async (req, res) => {
+  try {
+    const profile = await getOne(
+      `SELECT id, display_name, city, category, bio, phone, public_email, website
+       FROM agent_profiles
+       WHERE agent_id = $1`,
+      [req.user.agentId]
+    );
+    res.json({ profile: profile || null });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Errore lettura profilo" });
+  }
+});
+
+// Crea/aggiorna profilo dell'agente loggato (UPSERT)
+app.post("/api/profile", auth, async (req, res) => {
+  try {
+    const {
+      display_name,
+      city,
+      category,
+      bio,
+      phone,
+      public_email,
+      website
+    } = req.body || {};
+
+    // validazioni minime
+    if (!display_name || !city || !category) {
+      return res.status(400).json({ error: "display_name, city e category sono obbligatori" });
+    }
+
+    const cleanBio = (bio || "").toString().slice(0, 2000);
+    const cleanPhone = phone ? phone.toString().slice(0, 50) : null;
+    const cleanEmail = public_email ? public_email.toString().slice(0, 200) : null;
+    const cleanWebsite = website ? website.toString().slice(0, 300) : null;
+
+    const row = await getOne(
+      `INSERT INTO agent_profiles (agent_id, display_name, city, category, bio, phone, public_email, website)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       ON CONFLICT (agent_id)
+       DO UPDATE SET
+         display_name = EXCLUDED.display_name,
+         city = EXCLUDED.city,
+         category = EXCLUDED.category,
+         bio = EXCLUDED.bio,
+         phone = EXCLUDED.phone,
+         public_email = EXCLUDED.public_email,
+         website = EXCLUDED.website
+       RETURNING id, display_name, city, category, bio, phone, public_email, website`,
+      [
+        req.user.agentId,
+        display_name.toString().slice(0, 120),
+        city.toString().slice(0, 80),
+        category.toString().slice(0, 80),
+        cleanBio,
+        cleanPhone,
+        cleanEmail,
+        cleanWebsite
+      ]
+    );
+
+    res.json({ ok: true, profile: row });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Errore salvataggio profilo" });
+  }
+});
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
 
 
