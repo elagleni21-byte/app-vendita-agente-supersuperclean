@@ -18,17 +18,15 @@
   const email = document.getElementById("email");
   const password = document.getElementById("password");
   const err = document.getElementById("err");
+  const btn = document.getElementById("btnLogin");
 
-  document.getElementById("btnLogin").addEventListener("click", async () => {
+  btn.addEventListener("click", async () => {
     err.textContent = "";
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.value.trim(),
-          password: password.value
-        })
+        body: JSON.stringify({ email: email.value.trim(), password: password.value })
       });
 
       const data = await res.json().catch(() => ({}));
