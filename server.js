@@ -212,8 +212,26 @@ app.get("/api/orders/:id", auth, async (req, res) => {
     res.status(500).json({ error: "Errore dettaglio ordine" });
   }
 });
+app.get("/api/setup-demo", async (req, res) => {
+  try {
+    const existing = await getOne("SELECT id FROM agents WHERE email = $1", ["agent@example.com"]);
+    if (existing) return res.json({ ok: true, message: "Demo già esistente" });
+
+    const password_hash = bcrypt.hashSync("agent123", 10);
+    await query(
+      "INSERT INTO agents (name, email, password_hash) VALUES ($1, $2, $3)",
+      ["Agente Demo", "agent@example.com", password_hash]
+    );
+
+    res.json({ ok: true, message: "Demo creato" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: "Errore setup demo" });
+  }
+});
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
