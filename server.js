@@ -24,6 +24,7 @@ app.get("/", (req, res) => res.redirect("/login.html"));
 await initDb();
 
 async function seedIfEmpty() {
+  // agente demo (per login)
   const agentCount = await getOne("SELECT COUNT(*)::int as c FROM agents");
   if (agentCount?.c === 0) {
     const password_hash = bcrypt.hashSync("agent123", 10);
@@ -33,6 +34,7 @@ async function seedIfEmpty() {
     );
   }
 
+  // prodotti demo (come già hai)
   const productCount = await getOne("SELECT COUNT(*)::int as c FROM products");
   if (productCount?.c === 0) {
     const products = [
@@ -43,6 +45,28 @@ async function seedIfEmpty() {
     ];
     for (const p of products) {
       await query("INSERT INTO products (name, price_cents, stock) VALUES ($1, $2, $3)", p);
+    }
+  }
+
+  // profilo pubblico demo (per la ricerca)
+  const demoAgent = await getOne("SELECT id FROM agents WHERE email = $1", ["agent@example.com"]);
+  if (demoAgent) {
+    const existsProfile = await getOne("SELECT id FROM agent_profiles WHERE agent_id = $1", [demoAgent.id]);
+    if (!existsProfile) {
+      await query(
+        `INSERT INTO agent_profiles (agent_id, display_name, city, category, bio, phone, public_email, website)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [
+          demoAgent.id,
+          "Agente Demo",
+          "Milano",
+          "Immobiliare",
+          "Ti aiuto a vendere e comprare casa a Milano. Risposte veloci su WhatsApp.",
+          "+39 333 000 0000",
+          "agent@example.com",
+          ""
+        ]
+      );
     }
   }
 }
@@ -248,10 +272,81 @@ app.get("/api/reset-demo", async (req, res) => {
     res.status(500).json({ ok: false, error: "Errore setup demo" });
   }
 });
+// ------------------- PUBLIC SEARCH (no login) -------------------
+// /api/public/agents?q=...&city=...&category=...
+app.get("/api/public/agents", async (req, res) => {
+  try {
+    const q = (req.query.q || "").toString().trim();
+    const city = (req.query.city || "").toString().trim();
+    const category = (req.query.category || "").toString().trim();
+
+    const where = [];
+    const params = [];
+    let i = 1;
+
+    if (q) {
+      where.push(`(ap.display_name ILIKE $${i} OR ap.bio ILIKE $${i})`);
+      params.push(`%${q}%`);
+      i++;
+    }
+    if (city) {
+      where.push(`ap.city ILIKE $${i}`);
+      params.push(city);
+      i++;
+    }
+    if (category) {
+      where.push(`ap.category ILIKE $${i}`);
+      params.push(category);
+      i++;
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const agents = await getAll(
+      `
+      SELECT ap.id, ap.display_name, ap.city, ap.category,
+             ap.bio, ap.phone, ap.public_email, ap.website
+      FROM agent_profiles ap
+      ${whereSql}
+      ORDER BY ap.display_name ASC
+      LIMIT 50
+      `,
+      params
+    );
+
+    res.json({ agents });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Errore ricerca agenti" });
+  }
+});
+
+// Profilo singolo: /api/public/agents/:id
+app.get("/api/public/agents/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const agent = await getOne(
+      `
+      SELECT ap.id, ap.display_name, ap.city, ap.category,
+             ap.bio, ap.phone, ap.public_email, ap.website
+      FROM agent_profiles ap
+      WHERE ap.id = $1
+      `,
+      [id]
+    );
+
+    if (!agent) return res.status(404).json({ error: "Agente non trovato" });
+    res.json({ agent });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Errore profilo agente" });
+  }
+});
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
 
 
