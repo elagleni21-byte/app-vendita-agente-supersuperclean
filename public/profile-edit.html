@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Modifica Profilo</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .wrap{max-width:900px;margin:40px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:720px){.row{grid-template-columns:1fr}}
+    label{font-size:12px;opacity:.75}
+    input, textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
+    textarea{min-height:120px;resize:vertical}
+    .top{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+    .muted{opacity:.75}
+    .ok{color:green}
+    .err{color:#b00020}
+    button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .btn{background:#111;color:#fff}
+    .btn2{background:#f0f0f0}
+    a{color:inherit}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div style="font-weight:900;font-size:22px">Modifica Profilo Pubblico</div>
+        <div class="muted">Questo profilo appare nella ricerca pubblica.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn2" id="btnPublic">Apri ricerca</button>
+        <button class="btn2" id="btnLogout">Logout</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>Nome pubblico *</label>
+          <input id="display_name" placeholder="Es: Mario Rossi" />
+        </div>
+        <div>
+          <label>Città *</label>
+          <input id="city" placeholder="Es: Milano" />
+        </div>
+        <div>
+          <label>Categoria *</label>
+          <input id="category" placeholder="Es: Immobiliare" />
+        </div>
+        <div>
+          <label>Telefono</label>
+          <input id="phone" placeholder="+39 ..." />
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Email pubblica</label>
+        <input id="public_email" placeholder="nome@email.com" />
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Sito web</label>
+        <input id="website" placeholder="https://..." />
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Bio / descrizione</label>
+        <textarea id="bio" placeholder="Scrivi cosa fai, zona, disponibilità, ecc."></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" id="btnSave">Salva</button>
+        <button class="btn2" id="btnView">Vedi il mio profilo</button>
+        <div id="msg" class="muted"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const token = localStorage.getItem("token");
+if(!token) location.href = "/login.html";
+
+const $ = (id)=>document.getElementById(id);
+const msg = $("msg");
+
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+      ...(options.headers || {})
+    }
+  });
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error(data.error || "Errore");
+  return data;
+}
+
+async function loadProfile(){
+  msg.textContent = "Carico profilo...";
+  try{
+    const data = await api("/api/profile", { method:"GET" });
+    const p = data.profile;
+    if(p){
+      $("display_name").value = p.display_name || "";
+      $("city").value = p.city || "";
+      $("category").value = p.category || "";
+      $("bio").value = p.bio || "";
+      $("phone").value = p.phone || "";
+      $("public_email").value = p.public_email || "";
+      $("website").value = p.website || "";
+      msg.innerHTML = '<span class="ok">Profilo caricato.</span>';
+    } else {
+      msg.textContent = "Nessun profilo ancora: compilalo e salva.";
+    }
+  }catch(e){
+    msg.innerHTML = '<span class="err">' + e.message + '</span>';
+  }
+}
+
+async function saveProfile(){
+  msg.textContent = "Salvo...";
+  try{
+    const payload = {
+      display_name: $("display_name").value.trim(),
+      city: $("city").value.trim(),
+      category: $("category").value.trim(),
+      bio: $("bio").value.trim(),
+      phone: $("phone").value.trim(),
+      public_email: $("public_email").value.trim(),
+      website: $("website").value.trim()
+    };
+
+    const data = await api("/api/profile", { method:"POST", body: JSON.stringify(payload) });
+    msg.innerHTML = '<span class="ok">Salvato!</span>';
+    // salva l'id profilo per “vedi profilo”
+    localStorage.setItem("my_profile_id", data.profile.id);
+  }catch(e){
+    msg.innerHTML = '<span class="err">' + e.message + '</span>';
+  }
+}
+
+$("btnSave").addEventListener("click", saveProfile);
+
+$("btnView").addEventListener("click", async () => {
+  // Proviamo prima a leggere dal server (così siamo sicuri)
+  try{
+    const data = await api("/api/profile", { method:"GET" });
+    if(!data.profile) return alert("Salva il profilo prima.");
+    location.href = "/agent.html?id=" + encodeURIComponent(data.profile.id);
+  }catch(e){
+    alert(e.message);
+  }
+});
+
+$("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("token");
+  location.href = "/login.html";
+});
+
+$("btnPublic").addEventListener("click", () => {
+  location.href = "/search.html";
+});
+
+loadProfile();
+</script>
+</body>
+</html>
