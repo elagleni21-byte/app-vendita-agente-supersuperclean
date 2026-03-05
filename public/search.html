@@ -79,7 +79,22 @@ async function search(){
 btn.addEventListener("click", search);
 [q, city, category].forEach(inp => inp.addEventListener("keydown", (e)=>{ if(e.key==="Enter") search(); }));
 
-// Mostra demo al primo caricamento
+// Legge parametri URL (es: ?q=milano)
+const urlParams = new URLSearchParams(window.location.search);
+
+if (urlParams.get("q")) {
+  q.value = urlParams.get("q");
+}
+
+if (urlParams.get("city")) {
+  city.value = urlParams.get("city");
+}
+
+if (urlParams.get("category")) {
+  category.value = urlParams.get("category");
+}
+
+// Avvia ricerca automatica
 search();
 </script>
 </body>
