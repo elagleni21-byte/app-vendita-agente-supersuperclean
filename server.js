@@ -73,6 +73,23 @@ async function seedIfEmpty() {
 
 seedIfEmpty().catch((e) => console.error("Seed error:", e));
 
+await query(
+  `INSERT INTO agent_profiles (agent_id, display_name, city, category, bio, phone, public_email, website, photo_url, rating, reviews_count)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+  [
+    demoAgent.id,
+    "Agente Demo",
+    "Milano",
+    "Immobiliare",
+    "Ti aiuto a vendere e comprare casa a Milano. Risposte veloci su WhatsApp.",
+    "+39 333 000 0000",
+    "agent@example.com",
+    "",
+    "/images/agents/demo.jpg",
+    4.9,
+    128
+  ]
+);
 // ---------- Auth middleware ----------
 function auth(req, res, next) {
   const header = req.headers.authorization || "";
@@ -417,6 +434,7 @@ app.post("/api/profile", auth, async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
 
 
