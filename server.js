@@ -319,17 +319,18 @@ app.get("/api/public/agents", async (req, res) => {
 
     const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
-    const agents = await getAll(
-      `
-      SELECT ap.id, ap.display_name, ap.city, ap.category,
-             ap.bio, ap.phone, ap.public_email, ap.website
-      FROM agent_profiles ap
-      ${whereSql}
-      ORDER BY ap.display_name ASC
-      LIMIT 50
-      `,
-      params
-    );
+   const agents = await getAll(
+  `
+  SELECT ap.id, ap.display_name, ap.city, ap.category,
+         ap.bio, ap.phone, ap.public_email, ap.website,
+         ap.photo_url, ap.rating, ap.reviews_count
+  FROM agent_profiles ap
+  ${whereSql}
+  ORDER BY ap.display_name ASC
+  LIMIT 50
+  `,
+  params
+);
 
     res.json({ agents });
   } catch (e) {
@@ -342,15 +343,16 @@ app.get("/api/public/agents", async (req, res) => {
 app.get("/api/public/agents/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const agent = await getOne(
-      `
-      SELECT ap.id, ap.display_name, ap.city, ap.category,
-             ap.bio, ap.phone, ap.public_email, ap.website
-      FROM agent_profiles ap
-      WHERE ap.id = $1
-      `,
-      [id]
-    );
+   const agent = await getOne(
+  `
+  SELECT ap.id, ap.display_name, ap.city, ap.category,
+         ap.bio, ap.phone, ap.public_email, ap.website,
+         ap.photo_url, ap.rating, ap.reviews_count
+  FROM agent_profiles ap
+  WHERE ap.id = $1
+  `,
+  [id]
+);
 
     if (!agent) return res.status(404).json({ error: "Agente non trovato" });
     res.json({ agent });
@@ -434,6 +436,7 @@ app.post("/api/profile", auth, async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server avviato su porta ${PORT}`);
 });
+
 
 
 
