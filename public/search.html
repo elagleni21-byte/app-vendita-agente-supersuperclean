@@ -6,32 +6,57 @@
   <title>Cerca un agente</title>
   <link rel="stylesheet" href="/css/style.css" />
   <style>
-    .wrap{max-width:920px;margin:48px auto;padding:0 16px}
-    .logo{font-size:32px;font-weight:800;margin-bottom:16px}
-    .bar{display:flex;gap:10px;flex-wrap:wrap}
-    .bar input{flex:1;min-width:220px}
-    .results{margin-top:18px;display:grid;gap:12px}
-    .card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-    .muted{opacity:.75}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
-    .tag{font-size:12px;background:#f0f0f0;padding:4px 8px;border-radius:999px}
-    a{color:inherit;text-decoration:none}
-    a:hover{text-decoration:underline}
+    body{background:#0b1220;color:#eaf0ff;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    .wrap{max-width:1100px;margin:40px auto;padding:0 16px}
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .logo{font-size:34px;font-weight:1000;letter-spacing:.2px}
+    .sub{opacity:.75}
+    .bar{
+      margin-top:14px;
+      display:flex;gap:10px;flex-wrap:wrap;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:10px;
+    }
+    .bar input{
+      flex:1;min-width:220px;
+      border:0;outline:none;
+      background:transparent;color:#eaf0ff;
+      padding:10px;border-radius:12px;
+    }
+    .bar button{
+      border:0;border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;font-weight:900;
+      background:linear-gradient(90deg,#7c3aed,#2563eb);
+      color:#fff;
+    }
+    .info{margin-top:10px;opacity:.75}
+    a{color:inherit}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="logo">Trova un agente</div>
+    <div class="top">
+      <div>
+        <div class="logo">Trova un agente</div>
+        <div class="sub">Cerca per nome, città o categoria.</div>
+      </div>
+      <div class="sub">
+        <a href="/login.html">Area agente</a>
+      </div>
+    </div>
 
     <div class="bar">
-      <input id="q" placeholder="Cerca per nome o parole (es: casa, auto, assicurazioni, Mario)"/>
+      <input id="q" placeholder="Nome o parole (es: casa, Mario, assicurazioni)"/>
       <input id="city" placeholder="Città (es: Milano)"/>
       <input id="category" placeholder="Categoria (es: Immobiliare)"/>
       <button id="btn">Cerca</button>
     </div>
 
-    <div id="info" class="muted" style="margin-top:10px;"></div>
-    <div id="results" class="results"></div>
+    <div id="info" class="info"></div>
+    <div id="results" class="cards"></div>
   </div>
 
 <script>
@@ -43,6 +68,10 @@ const results = document.getElementById("results");
 const info = document.getElementById("info");
 
 function esc(s){ return (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function stars(r){
+  const n = Math.max(0, Math.min(5, Math.round(Number(r||0))));
+  return "★★★★★".slice(0,n) + "☆☆☆☆☆".slice(0,5-n);
+}
 
 async function search(){
   results.innerHTML = "";
@@ -60,41 +89,48 @@ async function search(){
   info.textContent = agents.length ? `Risultati: ${agents.length}` : "Nessun risultato";
 
   for (const a of agents) {
+    const img = a.photo_url || "/images/agents/placeholder.jpg";
     const el = document.createElement("div");
-    el.className = "card";
+    el.className = "agentCard";
     el.innerHTML = `
-      <div style="font-weight:800;font-size:16px;">
-        <a href="/agent.html?id=${encodeURIComponent(a.id)}">${esc(a.display_name)}</a>
+      <img class="agentImg" src="${esc(img)}" alt="foto agente" onerror="this.src='/images/agents/placeholder.jpg'">
+      <div class="agentBody">
+        <div class="agentName">${esc(a.display_name)}</div>
+        <div class="agentMeta">
+          <span class="agentTag">📍 ${esc(a.city)}</span>
+          <span class="agentTag">🏷️ ${esc(a.category)}</span>
+        </div>
+        <div class="stars">
+          <span class="starRow">${stars(a.rating)}</span>
+          <span> ${Number(a.rating||0).toFixed(1)} </span>
+          <span style="opacity:.7">(${Number(a.reviews_count||0)} recensioni)</span>
+        </div>
+        <div class="agentBio">${esc((a.bio||"").slice(0,140))}${(a.bio||"").length>140?"…":""}</div>
+        <div class="agentBtnRow">
+          <button class="agentBtn" onclick="location.href='/agent.html?id=${encodeURIComponent(a.id)}'">Apri profilo</button>
+          <button class="agentBtn2" onclick="copyContact('${esc(a.public_email||"")}', '${esc(a.phone||"")}')">Contatti</button>
+        </div>
       </div>
-      <div class="row">
-        <span class="tag">${esc(a.city)}</span>
-        <span class="tag">${esc(a.category)}</span>
-      </div>
-      <div class="muted">${esc((a.bio||"").slice(0, 160))}${(a.bio||"").length>160?"…":""}</div>
     `;
     results.appendChild(el);
   }
 }
 
+function copyContact(email, phone){
+  const text = (email ? ("Email: " + email + "\n") : "") + (phone ? ("Tel: " + phone) : "");
+  if(!text.trim()) return alert("Nessun contatto disponibile.");
+  navigator.clipboard?.writeText(text);
+  alert("Contatti copiati:\n" + text);
+}
+
+// Legge parametri URL (?q=?city=?category=)
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("q")) q.value = urlParams.get("q");
+if (urlParams.get("city")) city.value = urlParams.get("city");
+if (urlParams.get("category")) category.value = urlParams.get("category");
+
 btn.addEventListener("click", search);
 [q, city, category].forEach(inp => inp.addEventListener("keydown", (e)=>{ if(e.key==="Enter") search(); }));
-
-// Legge parametri URL (es: ?q=milano)
-const urlParams = new URLSearchParams(window.location.search);
-
-if (urlParams.get("q")) {
-  q.value = urlParams.get("q");
-}
-
-if (urlParams.get("city")) {
-  city.value = urlParams.get("city");
-}
-
-if (urlParams.get("category")) {
-  category.value = urlParams.get("category");
-}
-
-// Avvia ricerca automatica
 search();
 </script>
 </body>
