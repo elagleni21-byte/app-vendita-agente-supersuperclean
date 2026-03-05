@@ -3,68 +3,168 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dashboard</title>
+  <title>Dashboard - Area Agente</title>
   <link rel="stylesheet" href="/css/style.css" />
-  <style>
-    .wrap{max-width:900px;margin:14px auto;padding:0 16px}
-    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-    .muted{opacity:.75}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    @media (max-width:720px){.grid{grid-template-columns:1fr}}
-    .btn{background:#111;color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
-    .btn2{background:#f0f0f0;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
-    .kpi{font-weight:900;font-size:22px;margin-top:6px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  </style>
 </head>
+
 <body>
-
-  <!-- HEADER (caricato da /_header.html) -->
-  <div id="appHeader"></div>
-
-  <div class="wrap">
-    <div class="card">
-      <div style="font-weight:900;font-size:20px;">Dashboard</div>
-      <div class="muted" id="hello" style="margin-top:6px;">Caricamento...</div>
-
-      <div class="row">
-        <button class="btn" onclick="location.href='/cart.html'">Carrello</button>
-        <button class="btn2" onclick="location.href='/orders.html'">Ordini</button>
-        <button class="btn2" onclick="location.href='/profile-edit.html'">Modifica profilo</button>
-        <button class="btn2" onclick="location.href='/search.html'">Ricerca pubblica</button>
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brandRow">
+        <img src="/images/logo.png" alt="Logo">
+        <div>
+          <div class="title">Il tuo Sito</div>
+          <div class="sub" id="agentNameSmall">Caricamento...</div>
+        </div>
       </div>
-    </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="muted">Ordini totali</div>
-        <div class="kpi" id="kpiOrders">—</div>
-      </div>
-      <div class="card">
-        <div class="muted">Prodotti disponibili</div>
-        <div class="kpi" id="kpiProducts">—</div>
-      </div>
-    </div>
+      <div class="nav">
+        <a href="/dashboard.html">🏠 Dashboard</a>
+        <a href="/cart.html">🛒 Carrello</a>
+        <a href="/orders.html">📦 Ordini</a>
+        <a href="/profile-edit.html">✍️ Modifica profilo</a>
+        <a href="/search.html">🔎 Ricerca pubblica</a>
 
-    <div class="card" style="margin-top:12px;">
-      <div style="font-weight:800;">Suggerimento</div>
-      <div class="muted" style="margin-top:6px;">
-        Compila il profilo pubblico così compari nella ricerca. Poi prova a cercarti su <b>search.html</b>.
+        <button id="btnProfile">
+          👤 Il mio profilo pubblico
+          <span class="pill">apri</span>
+        </button>
+
+        <button id="btnLogout">
+          🚪 Logout
+          <span class="pill">esci</span>
+        </button>
       </div>
-    </div>
+
+      <div style="margin-top:18px" class="card">
+        <div class="cardTitle">Stato</div>
+        <div style="margin-top:10px" class="row">
+          <span class="badge">✅ Online</span>
+          <span class="badge" id="badgeCity">📍 —</span>
+        </div>
+        <div class="small" style="margin-top:10px" id="hint">
+          Compila il profilo per comparire nella ricerca.
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="container">
+        <!-- TOPBAR -->
+        <div class="topbar">
+          <div class="searchBox">
+            🔎
+            <input id="quickSearch" placeholder="Cerca subito un agente pubblico (ti manda su search.html)..." />
+          </div>
+          <button class="iconBtn" id="btnGoSearch" title="Vai alla ricerca">✨</button>
+        </div>
+
+        <!-- HERO -->
+        <div class="hero">
+          <div class="heroLeft">
+            <img src="/images/hero.jpg" alt="Hero">
+            <div class="heroOverlay">
+              <div>
+                <div class="heroH" id="hello">Ciao 👋</div>
+                <div class="heroP">
+                  Questa è la tua area agente. Gestisci ordini, aggiorna il profilo e fatti trovare nella ricerca pubblica.
+                </div>
+                <div class="row" style="margin-top:12px">
+                  <button class="btn" onclick="location.href='/profile-edit.html'">Completa profilo</button>
+                  <button class="btn2" onclick="location.href='/orders.html'">Vedi ordini</button>
+                  <button class="btn2" onclick="location.href='/cart.html'">Nuovo ordine</button>
+                </div>
+              </div>
+              <div class="row">
+                <span class="badge">🔐 Login attivo</span>
+                <span class="badge" id="badgeRole">👤 agent</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardTitle">Azioni veloci</div>
+            <div class="row" style="margin-top:12px">
+              <button class="btn2" onclick="location.href='/search.html'">Apri ricerca</button>
+              <button class="btn2" onclick="location.href='/agent.html?id=' + encodeURIComponent(localStorage.getItem('my_profile_id')||'')">
+                Apri profilo (se esiste)
+              </button>
+            </div>
+
+            <div style="margin-top:14px" class="small">
+              Suggerimento: salva il profilo e prova a cercare “Milano” o la tua città su <b>search.html</b>.
+            </div>
+
+            <div style="margin-top:14px" class="card" style="padding:12px">
+              <div class="cardTitle">Prossimo obiettivo</div>
+              <div class="small" style="margin-top:8px">
+                ✅ Profilo completo<br/>
+                ✅ Foto e contatti<br/>
+                ⏳ Recensioni e rating<br/>
+                ⏳ “Vicino a me” (mappa)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI -->
+        <div class="grid kpi" style="margin-top:14px">
+          <div class="card">
+            <div class="cardTitle">Prodotti disponibili</div>
+            <div class="kpiNum" id="kpiProducts">—</div>
+            <div class="small">Dal catalogo prodotti</div>
+          </div>
+          <div class="card">
+            <div class="cardTitle">Ordini totali</div>
+            <div class="kpiNum" id="kpiOrders">—</div>
+            <div class="small">Creati dal tuo account</div>
+          </div>
+          <div class="card">
+            <div class="cardTitle">Ultimo ordine</div>
+            <div class="kpiNum" id="kpiLastOrder">—</div>
+            <div class="small" id="kpiLastOrderDate">—</div>
+          </div>
+          <div class="card">
+            <div class="cardTitle">Profilo pubblico</div>
+            <div class="kpiNum" id="kpiProfile">—</div>
+            <div class="small">Presente nella ricerca</div>
+          </div>
+        </div>
+
+        <!-- RECENT ORDERS -->
+        <div class="card" style="margin-top:14px">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div style="font-weight:1000;font-size:16px">Ultimi ordini</div>
+              <div class="small">Anteprima veloce (top 8)</div>
+            </div>
+            <button class="btn2" onclick="location.href='/orders.html'">Vedi tutti</button>
+          </div>
+
+          <div style="margin-top:12px; overflow:auto;">
+            <table class="table" id="ordersTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Totale</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="4" class="small">Caricamento...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
   </div>
 
 <script>
-/* --- carica header condiviso --- */
-(async function(){
-  const host = document.getElementById("appHeader");
-  const res = await fetch("/_header.html");
-  host.innerHTML = await res.text();
-})();
-</script>
-
-<script>
-/* --- auth + dati dashboard --- */
 const token = localStorage.getItem("token");
 if(!token) location.href="/login.html";
 
@@ -75,26 +175,96 @@ async function api(path){
   return data;
 }
 
-(async function(){
-  try{
-    const me = await api("/api/me");
-    document.getElementById("hello").textContent =
-      `Ciao ${me.me?.name || "Agente"} 👋`;
+function eur(cents){
+  const n = Number(cents||0)/100;
+  return n.toLocaleString("it-IT", { style:"currency", currency:"EUR" });
+}
 
-    // KPI 1: prodotti
-    const prod = await api("/api/products");
-    document.getElementById("kpiProducts").textContent =
-      (prod.products || []).length;
+async function load(){
+  // Me
+  const me = await api("/api/me");
+  document.getElementById("hello").textContent = `Ciao ${me.me?.name || "Agente"} 👋`;
+  document.getElementById("agentNameSmall").textContent = me.me?.email || "—";
 
-    // KPI 2: ordini
-    const ord = await api("/api/orders");
-    document.getElementById("kpiOrders").textContent =
-      (ord.orders || []).length;
-  }catch(e){
-    document.getElementById("hello").textContent = e.message;
+  // Role badge (se in token non c’è role, resta agent)
+  document.getElementById("badgeRole").textContent = "👤 agent";
+
+  // Profile
+  const prof = await api("/api/profile");
+  if(prof.profile && prof.profile.id){
+    document.getElementById("kpiProfile").textContent = "OK";
+    localStorage.setItem("my_profile_id", prof.profile.id);
+    document.getElementById("badgeCity").textContent = "📍 " + (prof.profile.city || "—");
+    document.getElementById("hint").textContent = "Profilo attivo: sei visibile nella ricerca pubblica.";
+  } else {
+    document.getElementById("kpiProfile").textContent = "NO";
+    document.getElementById("badgeCity").textContent = "📍 —";
   }
-})();
-</script>
 
+  // Products KPI
+  const prod = await api("/api/products");
+  document.getElementById("kpiProducts").textContent = (prod.products || []).length;
+
+  // Orders KPI + table
+  const ord = await api("/api/orders");
+  const orders = ord.orders || [];
+  document.getElementById("kpiOrders").textContent = orders.length;
+
+  if(orders.length){
+    const last = orders[0];
+    document.getElementById("kpiLastOrder").textContent = "#" + last.id;
+    document.getElementById("kpiLastOrderDate").textContent =
+      new Date(last.created_at).toLocaleString("it-IT");
+
+    const tbody = document.querySelector("#ordersTable tbody");
+    tbody.innerHTML = "";
+    orders.slice(0,8).forEach(o=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><a href="/orders.html">#${o.id}</a></td>
+        <td>${(o.customer_name||"").toString()}</td>
+        <td>${eur(o.total_cents)}</td>
+        <td>${new Date(o.created_at).toLocaleString("it-IT")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } else {
+    document.getElementById("kpiLastOrder").textContent = "—";
+    document.getElementById("kpiLastOrderDate").textContent = "Nessun ordine";
+    document.querySelector("#ordersTable tbody").innerHTML =
+      `<tr><td colspan="4" class="small">Nessun ordine ancora.</td></tr>`;
+  }
+}
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("token");
+  location.href="/login.html";
+});
+
+document.getElementById("btnProfile").addEventListener("click", async () => {
+  try{
+    const data = await api("/api/profile");
+    if(data.profile && data.profile.id){
+      location.href = "/agent.html?id=" + encodeURIComponent(data.profile.id);
+    } else {
+      location.href = "/profile-edit.html";
+    }
+  }catch(e){
+    alert(e.message);
+  }
+});
+
+// Quick search → manda su /search.html con query
+document.getElementById("btnGoSearch").addEventListener("click", () => {
+  const q = document.getElementById("quickSearch").value.trim();
+  if(!q) return location.href="/search.html";
+  location.href = "/search.html?q=" + encodeURIComponent(q);
+});
+document.getElementById("quickSearch").addEventListener("keydown", (e)=>{
+  if(e.key==="Enter") document.getElementById("btnGoSearch").click();
+});
+
+load().catch(e => alert(e.message));
+</script>
 </body>
 </html>
