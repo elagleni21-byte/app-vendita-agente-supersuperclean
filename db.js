@@ -23,6 +23,10 @@ export async function getAll(text, params = []) {
 }
 
 export async function initDb() {
+ await query(`ALTER TABLE agent_profiles ADD COLUMN IF NOT EXISTS photo_url TEXT;`);
+await query(`ALTER TABLE agent_profiles ADD COLUMN IF NOT EXISTS rating NUMERIC(2,1) NOT NULL DEFAULT 0;`);
+await query(`ALTER TABLE agent_profiles ADD COLUMN IF NOT EXISTS reviews_count INT NOT NULL DEFAULT 0;`);  
+ 
   // --- Agents (login)
   await query(`
     CREATE TABLE IF NOT EXISTS agents (
@@ -90,3 +94,4 @@ export async function initDb() {
   await query(`CREATE INDEX IF NOT EXISTS idx_agent_profiles_category ON agent_profiles (category);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_agent_profiles_display_name ON agent_profiles (display_name);`);
 }
+
