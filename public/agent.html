@@ -12,6 +12,32 @@
     .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
     .tag{font-size:12px;background:#f0f0f0;padding:4px 8px;border-radius:999px}
     a{color:inherit}
+    const img = a.photo_url || "/images/agents/placeholder.jpg";
+const rating = Number(a.rating||0).toFixed(1);
+const reviews = Number(a.reviews_count||0);
+function stars(r){
+  const n = Math.max(0, Math.min(5, Math.round(Number(r||0))));
+  return "★★★★★".slice(0,n) + "☆☆☆☆☆".slice(0,5-n);
+}
+
+card.innerHTML = `
+  <img src="${esc(img)}" alt="foto agente" style="width:100%;height:240px;object-fit:cover;border-radius:12px" onerror="this.src='/images/agents/placeholder.jpg'">
+  <div style="margin-top:12px;font-weight:900;font-size:22px;">${esc(a.display_name)}</div>
+
+  <div class="row" style="margin-top:10px;">
+    <span class="tag">${esc(a.city)}</span>
+    <span class="tag">${esc(a.category)}</span>
+    <span class="tag">⭐ ${stars(a.rating)} ${rating} (${reviews})</span>
+  </div>
+
+  <div style="margin-top:10px;line-height:1.4">${esc(a.bio || "")}</div>
+
+  <div class="row muted" style="margin-top:14px;">
+    ${a.phone ? `<div>📞 ${esc(a.phone)}</div>` : ""}
+    ${a.public_email ? `<div>✉️ ${esc(a.public_email)}</div>` : ""}
+    ${a.website ? `<div>🌐 <a href="${esc(a.website)}" target="_blank" rel="noreferrer">${esc(a.website)}</a></div>` : ""}
+  </div>
+`;
   </style>
 </head>
 <body>
